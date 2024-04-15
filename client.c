@@ -17,9 +17,9 @@ int main(int argc, char **argv)
         printf("Press 0 to exit\n");
         printf("Enter you choice: ");
         scanf("%c", &choice);
+        printf("THIS IS CHOICE %c-\n", choice);
         if (choice == '1')
         {
-            system("clear");
             oneToOne();
         }
 

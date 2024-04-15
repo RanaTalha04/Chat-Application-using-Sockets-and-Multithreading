@@ -9,7 +9,7 @@ int login()
     {
 
         printf("How do you want to continue?\n");
-        printf("Press 1 for login and 2 for signup");
+        printf("Press 1 for login and 2 for signup: ");
         scanf("%d", &choice);
         if (choice == 1)
         {

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include<pthread.h>
+#include <pthread.h>
 
 // Global Variables
 extern char name[20];
@@ -20,4 +20,7 @@ extern int port;
 int login();
 void makeConnection();
 void oneToOne();
+
+void *sendMsgHandler();
+void *recvMsgHandler();
 #endif
