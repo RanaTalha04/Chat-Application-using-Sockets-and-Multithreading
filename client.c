@@ -2,6 +2,8 @@
 char buf[300];
 int main(int argc, char **argv)
 {
+    system("clear");
+
     makeConnection();
     if (!login())
     {
@@ -12,6 +14,7 @@ int main(int argc, char **argv)
     printf("\n\n This is your name %s\n\n", password);
     do
     {
+        system("clear");
         printf("How do you want to continue\n");
         printf("Press 1 for one To one Conversation\n");
         printf("Press 2 to make a group\n");
