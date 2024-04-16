@@ -1,10 +1,16 @@
 #include "header.h"
 pthread_mutex_t mutex;
+void move_cursor_up()
+{
+    printf("\033[1A"); // ANSI escape code to move cursor up one line
+}
 void *sendMsgHandler(void *arg)
 {
     while (1)
     {
         scanf("%s", buf);
+        move_cursor_up();
+        printf("%s: %s\n", name,buf);
         send(sockfd, buf, sizeof(buf), 0);
     }
 }

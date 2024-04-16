@@ -13,7 +13,6 @@ int login()
         scanf("%d", &choice);
         if (choice == 1)
         {
-            char name[10], password[10];
             printf("Enter your name: ");
             scanf("%s", name);
             printf("Enter your password: ");

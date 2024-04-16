@@ -9,6 +9,7 @@ int main(int argc, char **argv)
         return 1;
     }
     char choice;
+    printf("\n\n This is your name %s\n\n", password);
     do
     {
         printf("How do you want to continue\n");
