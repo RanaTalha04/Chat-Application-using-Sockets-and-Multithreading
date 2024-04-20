@@ -54,16 +54,9 @@ void makeConnection(int sockfd, int clifd)
 {
     while (1)
     {
-        printf("%d %d\n", sockfd, clifd);
-        if (recv(sockfd, buf, sizeof(buf), 0) == -1)
-        {
-            printf("Some error occured while recv");
-        };
-        printf("CliFD:%d\n message:%s\n", clifd, buf);
-        if (send(clifd, buf, sizeof(buf), 0)==-1)
-        {
-            printf("Some error occured while send");
-        }
+        recv(sockfd, buf, sizeof(buf), 0);
+        printf("%s", buf);
+        send(clifd, buf, sizeof(buf), 0);
     }
 }
 int auth(char *str)
@@ -172,7 +165,7 @@ void *handleClient(void *arg)
 }
 int main(int argc, char *argv[])
 {
-    system("clear");
+
     // Port number taken as an argument from the command line
     // if (argc != 2)
     // {
