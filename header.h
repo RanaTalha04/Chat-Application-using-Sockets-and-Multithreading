@@ -21,6 +21,5 @@ int login();
 void makeConnection();
 void oneToOne();
 
-void *sendMsgHandler();
-void *recvMsgHandler();
+void getstr(char *str, int len);
 #endif

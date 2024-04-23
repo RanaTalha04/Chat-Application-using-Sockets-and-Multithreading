@@ -54,9 +54,20 @@ void makeConnection(int sockfd, int clifd)
 {
     while (1)
     {
+        printf("Client taking mutex\n");
+         printf("Leaving Mutex\n");
+        pthread_mutex_unlock(&mutex);
         recv(sockfd, buf, sizeof(buf), 0);
-        printf("%s", buf);
+        printf("Message recived :%s", buf);
+        if (!strcmp(buf, "exit"))
+        {
+            send(sockfd, buf, sizeof(buf), 0);
+            pthread_mutex_unlock(&mutex);
+            break;
+        }
         send(clifd, buf, sizeof(buf), 0);
+        printf("Leaving Mutex\n");
+        pthread_mutex_unlock(&mutex);
     }
 }
 int auth(char *str)
@@ -81,7 +92,7 @@ int auth(char *str)
 }
 void *handleClient(void *arg)
 {
-    printClients();
+    char clientName[20];
     pthread_detach(pthread_self());
     int index = *((int *)arg);
     printf("Assigning the client on %d\n", index);
@@ -89,78 +100,97 @@ void *handleClient(void *arg)
     index--;
     int sockfd = clifd[index].sockfd;
     printf("Index : %d CLIFD: %d\n", index, sockfd);
-    memset(buf, 0, 300);
-    int size = recv(sockfd, buf, sizeof(buf), 0);
-    printf("Buffer: %d\n", size);
-    // login and signup
-
-    if (buf[0] == '1')
+    do
     {
-        printf("Auth request\n");
-        if (buf[1] == '1')
+        printf("Client taking mutex\n");
+         printf("Leaving Mutex\n");
+        pthread_mutex_unlock(&mutex);
+        memset(buf, 0, 300);
+        int size = recv(sockfd, buf, sizeof(buf), 0);
+        pthread_mutex_unlock(&mutex);
+        printf("Buffer: %d\n", size);
+        // login and signup
+
+        if (buf[0] == '1')
         {
-
-            if (auth(buf))
+            printf("Auth request\n");
+            if (buf[1] == '1')
             {
-                sprintf(buf, "%s", "1:You are logged In successfully");
-                strcpy(clifd[index].name, name);
-                printf("THis is your name: %s\n", clifd[index].name);
-                send(sockfd, &buf, sizeof(buf), 0);
 
-                // Here i will write the code for one to one converstation
-                // todo: make the function in seprate file to make the code readable
-                recv(sockfd, buf, sizeof(buf), 0);
-                printf("This is buffer : %s\n", buf);
-                if (buf[0] == '1')
+                if (auth(buf))
                 {
-                    printf("End to End Chat\n");
-                    char delimiter[] = ":";
-                    char *reqType = strtok(buf, delimiter);
-                    char *cliName = strtok(NULL, delimiter);
-                    printf("This is cliname:%s\n", cliName);
-                    int clifd = searchClient(cliName);
-                    if (searchClient(cliName))
+                    printf("Client taking mutex\n");
+         printf("Leaving Mutex\n");
+        pthread_mutex_unlock(&mutex);
+                    sprintf(buf, "%s", "1:You are logged In successfully");
+                    strcpy(clifd[index].name, name);
+                    strcpy(clientName, clifd[index].name);
+                    printf("THis is your name: %s\n", clifd[index].name);
+                    send(sockfd, &buf, sizeof(buf), 0);
+                    recv(sockfd, buf, sizeof(buf), 0);
+                    printf("This is buffer : %s\n", buf);
+                    pthread_mutex_unlock(&mutex);
+
+                    // Here i will write the code for one to one converstation
+                    // todo: make the function in seprate file to make the code readable
+                    if (buf[0] == '1')
                     {
-                        memset(buf, 0, sizeof(buf));
-                        sprintf(buf, "1:%s", "Client Found");
-                        send(sockfd, buf, strlen(buf), 0);
-                        makeConnection(sockfd, clifd);
+                        printf("End to End Chat\n");
+                        char delimiter[] = ":";
+                        char *reqType = strtok(buf, delimiter);
+                        char *cliName = strtok(NULL, delimiter);
+                        printf("This is cliname:%s\n", cliName);
+                        int clifd = searchClient(cliName);
+                        if (searchClient(cliName))
+                        {
+                            printf("Client taking mutex\n");
+         printf("Leaving Mutex\n");
+        pthread_mutex_unlock(&mutex);
+                            memset(buf, 0, sizeof(buf));
+                            sprintf(buf, "1:%s", "Client Found");
+                            send(sockfd, buf, strlen(buf), 0);
+                            printClients();
+                            pthread_mutex_unlock(&mutex);
+                            makeConnection(sockfd, clifd);
+                        }
+                    }
+                    else
+                    {
+                        printf("Invalid request %c\n", buf[0]);
                     }
                 }
                 else
                 {
-                    printf("Invalid request %c\n", buf[0]);
+                    sprintf(buf, "%s", "0:Invalid Credentials");
+                    send(sockfd, &buf, sizeof(buf), 0);
                 }
+            }
+            // signup
+            else if (buf[1] == '2')
+            {
+                char delimiter[] = ":";
+                char *reqType = strtok(buf, delimiter);
+                char *name = strtok(NULL, delimiter);
+                char *password = strtok(NULL, delimiter);
+                FILE *file = fopen("auth.txt", "a");
+                fprintf(file, "%s %s\n", name, password);
+                fclose(file);
+                sprintf(buf, "%s", "1:You are registered successfully");
+                send(sockfd, &buf, sizeof(buf), 0);
             }
             else
             {
-                sprintf(buf, "%s", "0:Invalid Credentials");
+                memset(buf, 0, sizeof(buf));
+                sprintf(buf, "%s", "0:Invalid Request");
                 send(sockfd, &buf, sizeof(buf), 0);
             }
         }
-        // signup
-        else if (buf[1] == '2')
-        {
-            char delimiter[] = ":";
-            char *reqType = strtok(buf, delimiter);
-            char *name = strtok(NULL, delimiter);
-            char *password = strtok(NULL, delimiter);
-            FILE *file = fopen("auth.txt", "a");
-            fprintf(file, "%s %s\n", name, password);
-            fclose(file);
-            sprintf(buf, "%s", "1:You are registered successfully");
-            send(sockfd, &buf, sizeof(buf), 0);
-        }
-        else
-        {
-            memset(buf, 0, sizeof(buf));
-            sprintf(buf, "%s", "0:Invalid Request");
-            send(sockfd, &buf, sizeof(buf), 0);
-        }
-    }
+    } while (buf[0] != '0');
 
     //! Free the client space
     clifd[index].sockfd = 0;
+    memset(clifd[index].name, 0, sizeof(clifd[index].name));
+
     pthread_exit(NULL);
 }
 int main(int argc, char *argv[])

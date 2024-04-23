@@ -3,20 +3,23 @@ char name[20];
 char password[20];
 int login()
 {
-    int choice;
+    char choice;
     int flag = 0;
     do
     {
 
         printf("How do you want to continue?\n");
         printf("Press 1 for login and 2 for signup: ");
-        scanf("%d", &choice);
-        if (choice == 1)
+        fflush(stdin);
+        scanf("%c", &choice);
+        system("clear");
+        if (choice == '1')
         {
             printf("Enter your name: ");
             scanf("%s", name);
             printf("Enter your password: ");
             scanf("%s", password);
+            fflush(stdin);
             //! auth=1 and login=0 signup = 2
             sprintf(buf, "%d%d:%s:%s", 1, 1, name, password);
 

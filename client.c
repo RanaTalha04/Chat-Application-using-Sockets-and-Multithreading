@@ -8,8 +8,8 @@ int main(int argc, char **argv)
         printf("Log in Failed\n");
         return 1;
     }
-    char choice;
-    printf("\n\n This is your name %s\n\n", password);
+    char choice[3];
+    system("clear");
     do
     {
         printf("How do you want to continue\n");
@@ -17,12 +17,12 @@ int main(int argc, char **argv)
         printf("Press 2 to make a group\n");
         printf("Press 0 to exit\n");
         printf("Enter you choice: ");
-        scanf("%c", &choice);
-        printf("THIS IS CHOICE %c-\n", choice);
-        if (choice == '1')
+        scanf("%s", choice);
+        printf("THIS IS CHOICE \"%c\"-\n", choice[0]);
+        if (choice[0] == '1')
         {
             oneToOne();
         }
 
-    } while (choice != '0');
+    } while (choice[0] != '0');
 }
