@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#define BUFFER_SIZE 300
 #define MAX_CLIENTS 5
 #define PORT 8080
 struct client
@@ -13,11 +14,8 @@ struct client
     char name[100];
     int sockfd;
 };
-pthread_mutex_t rw_mutex;
-pthread_mutex_t mutex;
 struct client clifd[MAX_CLIENTS];
 int read_count = 0;
-char buf[300];
 char name[20];
 char password[20];
 void clearClients()
@@ -50,24 +48,60 @@ int searchClient(const char *name)
     }
     return 0;
 }
-void makeConnection(int sockfd, int clifd)
+char *makeFilename(const char *name, const char *cliName)
+{
+    printf("\n\n\nThis is name:%s\tThis is cliName:%s\n\n\n", name, cliName);
+    char *fileName = malloc(strlen(name) + strlen(cliName) + 5);
+    int i = 0, j = 0;
+    while (name[i] != '\0')
+    {
+        fileName[i] = name[i];
+        i++;
+    }
+    fileName[i] = ',';
+    i++;
+    while (cliName[j] != '\0')
+    {
+        fileName[i] = cliName[j];
+
+        i++;
+        j++;
+    }
+    fileName[i] = '.';
+    i++;
+    fileName[i] = 't';
+    i++;
+    fileName[i] = 'x';
+    i++;
+    fileName[i] = 't';
+    i++;
+    fileName[i] = '\0';
+    printf("This is fileName in the filename function:%s\n", fileName);
+    return fileName;
+}
+int saveMsg(const char *name, const char *cliName, const char *msg)
+{
+    printf("\n\nThis is name %s\nThis is clientName %s\nThis is message%s\n", name, cliName, msg);
+    char *filename = makeFilename(name, cliName);
+    printf("This is file Name:%s\n", filename);
+    FILE *file = fopen(filename, "a");
+    fprintf(file, "%s:%s\n", name, msg);
+    fclose(file);
+    return 1;
+}
+void makeConnection(int sockfd, int clifd, char *buf)
 {
     while (1)
     {
-        printf("Client taking mutex\n");
-         printf("Leaving Mutex\n");
-        pthread_mutex_unlock(&mutex);
-        recv(sockfd, buf, sizeof(buf), 0);
+        recv(sockfd, buf, BUFFER_SIZE, 0);
         printf("Message recived :%s", buf);
         if (!strcmp(buf, "exit"))
         {
-            send(sockfd, buf, sizeof(buf), 0);
-            pthread_mutex_unlock(&mutex);
+            send(sockfd, buf, BUFFER_SIZE, 0);
             break;
         }
-        send(clifd, buf, sizeof(buf), 0);
-        printf("Leaving Mutex\n");
-        pthread_mutex_unlock(&mutex);
+        send(clifd, buf, BUFFER_SIZE, 0);
+        // zohaib:zaid
     }
 }
 int auth(char *str)
@@ -92,6 +126,7 @@ int auth(char *str)
 }
 void *handleClient(void *arg)
 {
+    char buf[300];
     char clientName[20];
     pthread_detach(pthread_self());
     int index = *((int *)arg);
@@ -102,13 +137,8 @@ void *handleClient(void *arg)
     printf("Index : %d CLIFD: %d\n", index, sockfd);
     do
     {
-        printf("Client taking mutex\n");
-         printf("Leaving Mutex\n");
-        pthread_mutex_unlock(&mutex);
         memset(buf, 0, 300);
-        int size = recv(sockfd, buf, sizeof(buf), 0);
-        pthread_mutex_unlock(&mutex);
-        printf("Buffer: %d\n", size);
+        int size = recv(sockfd, buf, BUFFER_SIZE, 0);
         // login and signup
 
         if (buf[0] == '1')
@@ -119,17 +149,13 @@ void *handleClient(void *arg)
 
                 if (auth(buf))
                 {
-                    printf("Client taking mutex\n");
-         printf("Leaving Mutex\n");
-        pthread_mutex_unlock(&mutex);
                     sprintf(buf, "%s", "1:You are logged In successfully");
                     strcpy(clifd[index].name, name);
                     strcpy(clientName, clifd[index].name);
                     printf("THis is your name: %s\n", clifd[index].name);
-                    send(sockfd, &buf, sizeof(buf), 0);
-                    recv(sockfd, buf, sizeof(buf), 0);
+                    send(sockfd, &buf, BUFFER_SIZE, 0);
+                    recv(sockfd, buf, BUFFER_SIZE, 0);
                     printf("This is buffer : %s\n", buf);
-                    pthread_mutex_unlock(&mutex);
 
                     // Here i will write the code for one to one converstation
                     // todo: make the function in seprate file to make the code readable
@@ -137,21 +163,36 @@ void *handleClient(void *arg)
                     {
                         printf("End to End Chat\n");
                         char delimiter[] = ":";
-                        char *reqType = strtok(buf, delimiter);
-                        char *cliName = strtok(NULL, delimiter);
+                        char *temp = strtok(buf, delimiter);
+                        temp = strtok(NULL, delimiter);
+                        // This the client name by which the user wants to make a connection with
+                        char cliName[20];
+                        strcpy(cliName, temp);
                         printf("This is cliname:%s\n", cliName);
                         int clifd = searchClient(cliName);
-                        if (searchClient(cliName))
+                        printf("THis is clifd%d\n", clifd);
+
+                        if (clifd)
                         {
-                            printf("Client taking mutex\n");
-         printf("Leaving Mutex\n");
-        pthread_mutex_unlock(&mutex);
-                            memset(buf, 0, sizeof(buf));
+                            printf("\n\n\n\nCLIENT FOUND\n\n\n\n");
+                            memset(buf, 0, BUFFER_SIZE);
                             sprintf(buf, "1:%s", "Client Found");
+                            printf("Sending \"%d\"this message :%s-\n", sockfd, buf);
                             send(sockfd, buf, strlen(buf), 0);
                             printClients();
-                            pthread_mutex_unlock(&mutex);
-                            makeConnection(sockfd, clifd);
+                            makeConnection(sockfd, clifd, buf);
+                        }
+                        // if the client is not online
+                        else
+                        {
+                            sprintf(buf, "0:Client not found : \"%s\"", clientName);
+                            send(sockfd, buf, BUFFER_SIZE, 0);
+                            do
+                            {
+                                recv(sockfd, buf, BUFFER_SIZE, 0);
+                                saveMsg(clientName, cliName, buf);
+                                printf("\n\n\nThis is clientName:%s\nThis is cliName:%s\nThis is buffer:%s\n\n\n", clientName, cliName, buf);
+                            } while (strcmp(buf, "exit"));
                         }
                     }
                     else
@@ -162,12 +203,14 @@ void *handleClient(void *arg)
                 else
                 {
                     sprintf(buf, "%s", "0:Invalid Credentials");
-                    send(sockfd, &buf, sizeof(buf), 0);
+                    send(sockfd, &buf, BUFFER_SIZE, 0);
                 }
             }
             // signup
             else if (buf[1] == '2')
             {
+                // 1:1:talha:1122
+
                 char delimiter[] = ":";
                 char *reqType = strtok(buf, delimiter);
                 char *name = strtok(NULL, delimiter);
@@ -176,13 +219,13 @@ void *handleClient(void *arg)
                 fprintf(file, "%s %s\n", name, password);
                 fclose(file);
                 sprintf(buf, "%s", "1:You are registered successfully");
-                send(sockfd, &buf, sizeof(buf), 0);
+                send(sockfd, &buf, BUFFER_SIZE, 0);
             }
             else
             {
-                memset(buf, 0, sizeof(buf));
+                memset(buf, 0, BUFFER_SIZE);
                 sprintf(buf, "%s", "0:Invalid Request");
-                send(sockfd, &buf, sizeof(buf), 0);
+                send(sockfd, &buf, BUFFER_SIZE, 0);
             }
         }
     } while (buf[0] != '0');
@@ -255,7 +298,7 @@ int main(int argc, char *argv[])
                 continue;
             }
             // send messsage to clients
-            // send(clifd, buf, sizeof(buf), 0);
+            // send(clifd, buf, BUFFER_SIZE , 0);
         }
         i++;
         i = i % MAX_CLIENTS;

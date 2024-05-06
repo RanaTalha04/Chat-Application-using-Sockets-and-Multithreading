@@ -9,7 +9,7 @@ int main(int argc, char **argv)
         return 1;
     }
     char choice[3];
-    system("clear");
+    //system("clear");
     do
     {
         printf("How do you want to continue\n");

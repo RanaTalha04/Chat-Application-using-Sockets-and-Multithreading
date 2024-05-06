@@ -1,11 +1,20 @@
 #include "header.h"
 void getstr(char *str, int len)
 {
+    int c;
+    // while (c == '\n')
+    // {
+    //     // Discard the character
+    // }
     int i;
     for (i = 0; i < len; i++)
     {
         int a = getchar();
-        if (a == '\n' && i != 0)
+        if ((int)a == 10)
+        {
+            continue;
+        }
+        else if (a == '.')
         {
             break;
         }

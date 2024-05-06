@@ -45,7 +45,6 @@ void oneToOne()
     sprintf(buf, "1:%s", cliName);
     send(sockfd, &buf, sizeof(buf), 0);
     recv(sockfd, buf, sizeof(buf), 0);
-    system("clear");
     if (buf[0] == '1')
     {
         // todo: here will be the code of client found
@@ -59,7 +58,12 @@ void oneToOne()
     }
     else
     {
-        printf("Unable to find the client\n");
-        // todo: save the message if for the client if not on the server
+        printf("Client not found on the line\n");
+        do
+        {
+            getstr(buf, sizeof(buf));
+            int code = send(sockfd, buf, sizeof(buf), 0);
+
+        } while (strcmp(buf, "exit"));
     }
 }
