@@ -11,7 +11,6 @@ int login()
         printf("How do you want to continue?\n");
         printf("Press 1 for login and 2 for signup: ");
         scanf("%c", &choice);
-        //system("clear");
         if (choice == '1')
         {
             printf("Enter your name: ");
@@ -19,7 +18,6 @@ int login()
             printf("Enter your password: ");
             scanf("%s", password);
             fflush(stdin);
-            //! auth=1 and login=0 signup = 2
             sprintf(buf, "%d%d:%s:%s", 1, 1, name, password);
             send(sockfd, &buf, sizeof(buf), 0);
 
@@ -38,10 +36,7 @@ int login()
             scanf("%s", name);
             printf("Enter your password: ");
             scanf("%s", password);
-            //! auth=1 and login=0 signup = 2
             sprintf(buf, "%d%d:%s:%s", 1, 2, name, password);
-            // 1:1:talha:1122
-
             send(sockfd, &buf, sizeof(buf), 0);
 
             memset(buf, 0, sizeof(buf));

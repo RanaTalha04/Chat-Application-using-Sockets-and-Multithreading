@@ -3,7 +3,7 @@ int count;
 int exitFlag = 0;
 void move_cursor_up()
 {
-    printf("\033[1A"); // ANSI escape code to move cursor up one line
+    printf("\033[1A"); 
 }
 void *sendMsgHandler(void *arg)
 {
@@ -47,8 +47,6 @@ void oneToOne()
     recv(sockfd, buf, sizeof(buf), 0);
     if (buf[0] == '1')
     {
-        // todo: here will be the code of client found
-
         pthread_t send_thread;
         pthread_create(&send_thread, NULL, sendMsgHandler, NULL);
         pthread_t recv_thread;

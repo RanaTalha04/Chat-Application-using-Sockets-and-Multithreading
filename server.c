@@ -30,10 +30,6 @@ void printClients()
     printf("\n\n----------Printing details\n\n");
     for (int i = 0; i < MAX_CLIENTS; i++)
     {
-        // if (clifd[i].sockfd == 0)
-        // {
-        //     continue;
-        // }
         printf("%s %d\n", clifd[i].name, clifd[i].sockfd);
     }
 }
@@ -101,7 +97,6 @@ void makeConnection(int sockfd, int clifd, char *buf)
             break;
         }
         send(clifd, buf, BUFFER_SIZE, 0);
-        // zohaib:zaid
     }
 }
 int auth(char *str)
@@ -131,7 +126,6 @@ void *handleClient(void *arg)
     pthread_detach(pthread_self());
     int index = *((int *)arg);
     printf("Assigning the client on %d\n", index);
-    // Todo: an error is coming it is sending the an incremented index so will fix it later
     index--;
     int sockfd = clifd[index].sockfd;
     printf("Index : %d CLIFD: %d\n", index, sockfd);
@@ -139,7 +133,6 @@ void *handleClient(void *arg)
     {
         memset(buf, 0, 300);
         int size = recv(sockfd, buf, BUFFER_SIZE, 0);
-        // login and signup
 
         if (buf[0] == '1')
         {
@@ -157,15 +150,12 @@ void *handleClient(void *arg)
                     recv(sockfd, buf, BUFFER_SIZE, 0);
                     printf("This is buffer : %s\n", buf);
 
-                    // Here i will write the code for one to one converstation
-                    // todo: make the function in seprate file to make the code readable
                     if (buf[0] == '1')
                     {
                         printf("End to End Chat\n");
                         char delimiter[] = ":";
                         char *temp = strtok(buf, delimiter);
                         temp = strtok(NULL, delimiter);
-                        // This the client name by which the user wants to make a connection with
                         char cliName[20];
                         strcpy(cliName, temp);
                         printf("This is cliname:%s\n", cliName);

@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-// Global Variables
+
 extern char name[20];
 extern char password[20];
 extern char buf[300];

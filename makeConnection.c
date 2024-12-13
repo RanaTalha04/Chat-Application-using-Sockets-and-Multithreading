@@ -17,6 +17,7 @@ void makeConnection()
     server_addr.sin_addr.s_addr = INADDR_ANY;
     if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
+        
         perror("connect");
         exit(EXIT_FAILURE);
     }
